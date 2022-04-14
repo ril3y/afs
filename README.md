@@ -46,3 +46,4 @@ Should anyone want to extend this here are things that need work.
 2.  Config file that could be used to configure afs.
 3.  Password based authentication to remote server. (ssh keys w/o password only now)
 4.  Remote filepaths (right now its / root only)
+5.  Add checks for the remote server that netcat is installed.
