@@ -15,6 +15,10 @@ This is used to monitor when chia plots are created then auto matically query a 
 >[#] File transfer took 15.965821401278179 minutes!
 >[!] Removed: /mnt/output/testing/plot-k32-2022-04-14-01-00-8e90d5b4a0163148ed5c8b092b28cbc6f992c57a199896af056da6c0f305709b.plot successfully
 
+### When you have as many drives like below this is where afs shines.
+![image](https://user-images.githubusercontent.com/231731/163300912-e1260108-b007-40f8-afb2-e714271c62a6.png)
+
+
 ## Deps:
 pip3 install pyinotify paramiko 
 -- I think this is all that is needed externally --
