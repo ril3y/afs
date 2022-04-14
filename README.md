@@ -21,8 +21,10 @@ This is used to monitor when chia plots are created then auto matically query a 
 
 
 ## Deps:
-pip3 install pyinotify paramiko 
--- I think this is all that is needed externally --
+pip3 install pyinotify paramiko \
+-- I think this is all that is needed externally -- \
+The remote server *MUST* have netcat installed.  Typically *sudo apt install netcat*
+
 
 
 ## Configure
