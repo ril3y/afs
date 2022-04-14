@@ -1,30 +1,12 @@
 #!/usr/bin/env python3
-from Child import Child
-
-from utils import *
 from queue import Queue
-import sys
 import pyinotify
 import json
-import asyncore
-import asyncio
-import zlib
-import time
-from watchgod import awatch
-import os
-import threading
 from Drive import Drive
-from connection_manager import ConnectionManager
 from connection_manager import *
-from multiprocessing.pool import ThreadPool
-import multiprocessing
 from random import randint
-import threading
 import time
-import random
-
 from concurrent.futures import ThreadPoolExecutor
-from asyncio import coroutine
 
 EXCLUDED_DRIVES = {'loop', 'nvme0n1'}  # Drives to exclude
 MAX_THREADS = 3  # Number of threads that can run concurrently.
@@ -87,14 +69,6 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
             if job:
                 # print("GOT JOB")
                 self.loop.call_soon_threadsafe(self.connection.process_job(job))
-                # self.queue.task_done()
-            # if len(self.PENDING_JOBS) != 0:
-            #     job = self.PENDING_JOBS.pop()
-            #     await self.connection.process_job(job)
-            # self.print_statement(" No Jobs....")
-            # await asyncio.sleep(5)
-
-
 
     def create_job(self, job: TransferJob):
         # if job not in self.PENDING_JOBS:
@@ -125,20 +99,12 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
         AfsClient.print_statement(f"Querying Server {REMOTE_SERVER} for drive information...")
         self.populate_drive_info()
 
-        # self.query_thread = threading.Thread(target=self.query_drive_info_thread(), name="QueryDriveInfo" )
-        # self.query_thread.setDaemon(True)
-        # self.query_thread.join()
-        # self.query_thread.start()
-
         AfsClient.print_statement("Starting DirectoryWatcher...")
         # self.dir_watcher = DirectoryWatcher('/home/ril3y/tmp', self.watcher_callback)
         self.dir_watcher = DirectoryWatcher(self.WATCH_DIRECTORY, self.watcher_callback)
         self.dir_watcher.notifier.start()
 
         self.print_statement("AFS running, watching for new files")
-
-        # self.procs = []
-        # self.process = multiprocessing.Process(targe=self.query_drive_info_thread())
 
         self.tasks = []
         self.work_queue = Queue()
@@ -167,7 +133,6 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
         self.file_sender(job)
 
     def watcher_callback(self, evt: pyinotify.ProcessEvent):
-
 
         if evt.maskname == "IN_MOVED_TO" and evt.pathname.endswith(
                 ".plot"):  # This is used for my application but you can put IN_CREATE ETC
