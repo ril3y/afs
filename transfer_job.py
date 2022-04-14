@@ -1,6 +1,7 @@
 from Drive import Drive
 import os
 
+
 class TransferJob:
 
     def __init__(self, filename, crc32, destination_drive: Drive):
@@ -12,7 +13,7 @@ class TransferJob:
         self.crc32 = 0
 
     def build_remote_filename(self):
-        return self.get_destination()+os.sep+os.path.basename(self.filename)
+        return self.get_destination() + os.sep + os.path.basename(self.filename)
 
     def get_filename(self):
         return self.filename

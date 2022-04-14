@@ -2,6 +2,7 @@
 from Child import Child
 
 from utils import *
+from queue import Queue
 import sys
 import pyinotify
 import json
@@ -21,6 +22,8 @@ from random import randint
 import threading
 import time
 import random
+
+from concurrent.futures import ThreadPoolExecutor
 from asyncio import coroutine
 
 EXCLUDED_DRIVES = {'loop', 'nvme0n1'}  # Drives to exclude
@@ -30,10 +33,10 @@ MAX_THREADS = 3  # Number of threads that can run concurrently.
 class DirectoryWatcher:
     wm = pyinotify.WatchManager()
 
-    def __init__(self, directory, handler, loop):
+    def __init__(self, directory, handler):
         self.watcher = pyinotify.WatchManager()
-        # self.notifier = pyinotify.ThreadedNotifier(self.watcher, default_proc_fun=handler)
-        self.notifier = pyinotify.AsyncioNotifier(self.watcher, loop, default_proc_fun=handler)
+        self.notifier = pyinotify.ThreadedNotifier(self.watcher, default_proc_fun=handler)
+        # self.notifier = pyinotify.AsyncioNotifier(self.watcher, loop, default_proc_fun=handler)
         self.add_dir_to_watch(directory)
 
     def add_dir_to_watch(self, directory):
@@ -47,6 +50,7 @@ def main():
 
 class AfsClient:
     WATCH_DIRECTORY = '/mnt/output/testing'
+    MAX_TRANSFERS = 5
     PENDING_JOBS = []
     Drives = []
     VERSION = 1.0
@@ -90,35 +94,30 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
             # self.print_statement(" No Jobs....")
             # await asyncio.sleep(5)
 
-    def query_drive_info_thread(self):
-        # This thread is responsible for keeping the drive information current
 
-        while True:
-            self.print_statement("Querying Drive Info")
-            self.populate_drive_info()
-            time.sleep(5)
-
-    async def rnd_sleep(self, t):
-        # sleep for T seconds on average
-        await asyncio.sleep(t * random.random() * 2)
 
     def create_job(self, job: TransferJob):
-        if job not in self.PENDING_JOBS:
-            self.print_statement(f"Added Job: {job.crc32} to Pending Jobs.")
-            asyncio.run_coroutine_threadsafe(self.work_queue.put(job), self.loop)
-            self.PENDING_JOBS.append(job)
-            self.print_statement(f'Current #of Pending Jobs: {len(self.PENDING_JOBS)}')
+        # if job not in self.PENDING_JOBS:
+        self.print_statement(f"Added Job: {job.crc32} to Pending Jobs.")
+        self.work_queue.put(job)
+        # asyncio.run_coroutine_threadsafe(self.work_queue.put(job), self.loop)
+        # self.PENDING_JOBS.append(job)
+        self.print_statement(f'Current #of Pending Jobs: {self.work_queue.qsize()}')
 
     def remove_job(self, job):
         if job in self.PENDING_JOBS:
             self.print_statement(f"Removed {job.get_filename()} of size {job.get_filesize}")
             self.PENDING_JOBS.remove(job)
 
+    def file_sender(self, job: TransferJob):
+        port = randint(65000, 65535)  # Create random port to listen on
+        self.connection.open_file_connection(job, port)
+        self.connection.send_file(job, port)
+
     def __init__(self):
-        self.loop = asyncio.get_event_loop()
 
         print(self.BANNER)
-        self.pool = ThreadPool(processes=MAX_THREADS)
+        # self.executor = ThreadPoolExecutor(max_workers=self.MAX_TRANSFERS)
 
         AfsClient.print_statement(f"Connecting to {REMOTE_SERVER}")
         self.connection = ConnectionManager(REMOTE_SERVER, PRIVATE_KEY, USERNAME)
@@ -126,7 +125,6 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
         AfsClient.print_statement(f"Querying Server {REMOTE_SERVER} for drive information...")
         self.populate_drive_info()
 
-        # sleep_time = 5
         # self.query_thread = threading.Thread(target=self.query_drive_info_thread(), name="QueryDriveInfo" )
         # self.query_thread.setDaemon(True)
         # self.query_thread.join()
@@ -134,59 +132,59 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
 
         AfsClient.print_statement("Starting DirectoryWatcher...")
         # self.dir_watcher = DirectoryWatcher('/home/ril3y/tmp', self.watcher_callback)
-        self.dir_watcher = DirectoryWatcher(self.WATCH_DIRECTORY, self.watcher_callback, self.loop)
-        #self.dir_watcher.notifier.start()
+        self.dir_watcher = DirectoryWatcher(self.WATCH_DIRECTORY, self.watcher_callback)
+        self.dir_watcher.notifier.start()
+
         self.print_statement("AFS running, watching for new files")
 
         # self.procs = []
         # self.process = multiprocessing.Process(targe=self.query_drive_info_thread())
 
         self.tasks = []
-        self.work_queue = asyncio.Queue()
-        # asyncio.run(self.worker())
-        # blocking_fut = self.loop.run_in_executor(None, self.job_monitor())
-        # task = asyncio.Task(self.job_monitor())
-        # messages = await self.queue.get()
-        # self.loop.run_forever()
-        self.loop.create_task(self.worker())
+        self.work_queue = Queue()
 
-        self.loop.run_forever()
+        with ThreadPoolExecutor(max_workers=self.MAX_TRANSFERS) as executor:
+            while True:
+                # Infinite Loop to monitor for new transfers
+                if not self.work_queue.empty():
+                    # We have a transfer to execute
+                    _job = self.work_queue.get()
+                    executor.submit(self.worker, _job)
+                else:
+                    time.sleep(5)
 
+                # for job in list(self.work_queue.queue):
+                #
+                #     print(job.get_filename())
 
-    async def worker(self):
-        self.print_statement("Started Worker Loop")
-        while True:
-            # Get a "work item" out of the queue.
-            job = await self.work_queue.get()
+    def refresh_drive_info(self):
+        self.Drives.clear()
+        self.populate_drive_info()
 
-            # Sleep for the "sleep_for" seconds.
-            self.print_statement(f"Processing Job {job.get_filename()}")
-            self.connection.open_file_connection(job)
-            await asyncio.sleep(.5)
+    def worker(self, job):
 
-            # Notify the queue that the "work item" has been processed.
-            self.work_queue.task_done()
+        self.print_statement(f"Processing Job {job.get_filename()}")
+        self.file_sender(job)
 
     def watcher_callback(self, evt: pyinotify.ProcessEvent):
-        # if evt.maskname == "IN_ACCESS":
-        #     pass
-        # else:
-        #     print(f"EVENT: {evt.maskname} : {evt}")
+
+
         if evt.maskname == "IN_MOVED_TO" and evt.pathname.endswith(
                 ".plot"):  # This is used for my application but you can put IN_CREATE ETC
             self.print_statement(f"New File Detected: {evt.pathname}")
             start_time = time.time()
             self.print_statement(f"Calculating CRC32... Please wait...")
-            crc = crc32(evt.pathname)
+            # crc = crc32(evt.pathname)
             print(f"CRC32 Calculation took {(time.time() - start_time)} seconds!")
-            print(f"CRC32: {crc}")
+            # print(f"CRC32: {crc}")
+            self.refresh_drive_info()
+
             current_drive = self.get_drive_with_most_free_space()
             if current_drive.check_file_fits(evt.pathname):
                 self.print_statement(
                     f'File {evt.pathname} is bytes {os.path.getsize(evt.pathname)} will fit in {current_drive.get_name()} with {current_drive.get_free_space()} bytes')
-                j = TransferJob(evt.pathname, crc32=crc, destination_drive=current_drive)
+                j = TransferJob(evt.pathname, crc32=0000, destination_drive=current_drive)
                 self.create_job(j)
-
 
         elif evt.maskname == "IN_DELETE" and evt.pathname.endswith(".plot"):
             self.print_statement(f"File: {evt.pathname} has been deleted....")
@@ -226,12 +224,6 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
                 if len(current_high_free_drive.get_parent().children) == 0:
                     # if the children are 0 now on the parent remove the parent too!
                     tmp_drive_iterator.remove(current_high_free_drive.get_parent())
-
-                # if len(current_high_free_drive.get_parent().get_children()) == 0 and current_high_free_drive.get_parent() in tmp_drive_iterator:
-                #     tmp_drive_iterator.remove(current_high_free_drive.get_parent())
-                # else:
-                #     if len(current_high_free_drive.get_parent().children) != 0:
-                #         tmp_drive_iterator.append(current_high_free_drive.get_parent())
 
             else:
                 tmp_drive_iterator.remove(current_high_free_drive)
@@ -296,4 +288,4 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
 
 
 if __name__ == "__main__":
-   main()
+    main()
