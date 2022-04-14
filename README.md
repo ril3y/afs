@@ -25,7 +25,7 @@ pip3 install pyinotify paramiko
 -- I think this is all that is needed externally --
 
 
-##Configure
+## Configure
 
 ### In afs.py 
 Add your WATCH_DIRECTORY and configure your excluded drives (so you dont send files to your / mountpoint but your plot mount point)
