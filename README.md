@@ -5,15 +5,16 @@ This is used to monitor when chia plots are created then auto matically query a 
 
 ## Example output
 
->[*] Current #of Pending Jobs: 1
->[*] Processing Job /mnt/output/testing/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot`
->[!] Please wait for the remote connection to open
->Opening Connection @ 172.16.10.7:65173 sending file /mnt/output/testing/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot >to /mnt/b4602285-f53f-42d5-ac03-b18bbd352c5c/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot
->Connecting.... #0 of 5
->[#] Sending File /mnt/output/testing/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot to /mnt/b4602285-f53f-42d5-ac03->b18bbd352c5c/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot Please wait...
->[#] File has been sent.
->[#] File transfer took 15.965821401278179 minutes!
->[!] Removed: /mnt/output/testing/plot-k32-2022-04-14-01-00-8e90d5b4a0163148ed5c8b092b28cbc6f992c57a199896af056da6c0f305709b.plot successfully
+>[*] Current #of Pending Jobs: 1 \
+>[*] Processing Job /mnt/output/testing/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot \
+>[!] Please wait for the remote connection to open\
+>Opening Connection @ 172.16.10.7:65173 sending file /mnt/output/testing/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot >to /mnt/b4602285-f53f-42d5-ac03-b18bbd352c5c/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot\
+> \
+>Connecting.... #0 of 5\
+>[#] Sending File /mnt/output/testing/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot to /mnt/b4602285-f53f-42d5-ac03->b18bbd352c5c/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot Please wait...\
+>[#] File has been sent.\
+>[#] File transfer took 15.965821401278179 minutes!\
+>[!] Removed: /mnt/output/testing/plot-k32-2022-04-14-01-00-8e90d5b4a0163148ed5c8b092b28cbc6f992c57a199896af056da6c0f305709b.plot successfully 
 
 ### When you have as many drives like below this is where afs shines.
 ![image](https://user-images.githubusercontent.com/231731/163300912-e1260108-b007-40f8-afb2-e714271c62a6.png)
