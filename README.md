@@ -3,7 +3,7 @@ Auto File Sender
 This is used to monitor when chia plots are created then auto matically query a remote server (over ssh) for mount points (only in the root of the drive ie: / for now) with the most free space available.  It then transfers the files over the network and then removes the plots once the transfer is completed.  The key thing here is how the transfers work, we use netcat (nc) on the remote server (place where you want the files to end up) to open a connection on a random port (65000-65535).  Once the port is open afs will now send a file over this tcp socket.  This is much faster than using SCP etc.
  
 
-##Example output
+## Example output
 
 >[*] Current #of Pending Jobs: 1
 >[*] Processing Job /mnt/output/testing/plot-k32-2022-04-14-01-11-0488a322defe4a442aec1a8d5f880dfc5a63af934c152083d225513c60775cbd.plot`
@@ -15,18 +15,18 @@ This is used to monitor when chia plots are created then auto matically query a 
 >[#] File transfer took 15.965821401278179 minutes!
 >[!] Removed: /mnt/output/testing/plot-k32-2022-04-14-01-00-8e90d5b4a0163148ed5c8b092b28cbc6f992c57a199896af056da6c0f305709b.plot successfully
 
-##Deps:
+## Deps:
 pip3 install pyinotify paramiko 
 -- I think this is all that is needed externally --
 
 
 ##Configure
 
-###In afs.py 
+### In afs.py 
 Add your WATCH_DIRECTORY and configure your excluded drives (so you dont send files to your / mountpoint but your plot mount point)
 Set your number of threads (read this more like number of simultaneous transfers)
 
-###In connection_manager.py
+### In connection_manager.py
 Set these values:
 REMOTE_SERVER = '172.16.10.7'
 PRIVATE_KEY = '/home/ril3y/.ssh/id_rsa'
