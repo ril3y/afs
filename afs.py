@@ -2,7 +2,7 @@
 from queue import Queue
 import pyinotify
 import json
-from Drive import Drive
+from drive import Drive
 from connection_manager import *
 from random import randint
 import time
@@ -70,6 +70,8 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
                 # print("GOT JOB")
                 self.loop.call_soon_threadsafe(self.connection.process_job(job))
 
+
+
     def create_job(self, job: TransferJob):
         # if job not in self.PENDING_JOBS:
         self.print_statement(f"Added Job: {job.crc32} to Pending Jobs.")
@@ -99,12 +101,14 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
         AfsClient.print_statement(f"Querying Server {REMOTE_SERVER} for drive information...")
         self.populate_drive_info()
 
+
         AfsClient.print_statement("Starting DirectoryWatcher...")
         # self.dir_watcher = DirectoryWatcher('/home/ril3y/tmp', self.watcher_callback)
         self.dir_watcher = DirectoryWatcher(self.WATCH_DIRECTORY, self.watcher_callback)
         self.dir_watcher.notifier.start()
 
         self.print_statement("AFS running, watching for new files")
+
 
         self.tasks = []
         self.work_queue = Queue()
@@ -133,6 +137,7 @@ AAAAAAA                   AAAAAAAFFFFFFFFFFF            SSSSSSSSSSSSSSS
         self.file_sender(job)
 
     def watcher_callback(self, evt: pyinotify.ProcessEvent):
+
 
         if evt.maskname == "IN_MOVED_TO" and evt.pathname.endswith(
                 ".plot"):  # This is used for my application but you can put IN_CREATE ETC

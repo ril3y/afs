@@ -1,7 +1,7 @@
-import Child
 import os
 
 from utils import humanbytes
+
 
 
 class Drive:
@@ -20,7 +20,7 @@ class Drive:
         if "children" in data.keys():
             self.children = []
             for child in data['children']:
-                self.children.append(Child.Child(child, self))
+                self.children.append(Child(child, self))
 
     def is_child(self):
         return self.child
@@ -79,3 +79,24 @@ class Drive:
 
     def __repr__(self):
         return f"Drive: {self.name} FileSystem: {self.fstype} Size: {self.size} Free: {self.free}"
+
+
+class Child(Drive):
+
+    def __init__(self, data, parent: Drive):
+        self.data = data
+        self.name = self._get_attrib('name')
+        self.uuid = self._get_attrib('uuid')
+        self.fstype = self._get_attrib('fstype')
+        self.serial = self._get_attrib('serial')
+        self.size = int(self._get_attrib('size'))
+        self.free = int(self._get_attrib('fsavail'))
+        self.mount_point = self._get_attrib('mountpoint')
+        self.parent = parent
+        self.child = True
+
+    def get_parent(self):
+        return self.parent
+
+    def is_child(self):
+        return self.child
